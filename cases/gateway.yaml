@@ -1,0 +1,73 @@
+- id: AUTH-001
+  title: Gateway rejects requests without a key
+  category: authentication
+  severity: high
+  kind: http
+  request:
+    method: GET
+    url: "{target}/v1/models"
+    headers: {}
+  expect:
+    status: 401
+
+- id: BYPASS-001
+  title: Local models not reachable from the network
+  category: gateway-bypass
+  severity: high
+  kind: http
+  request:
+    method: GET
+    url: "http://{model_host}:8081/v1/models"
+    headers: {}
+  expect:
+    connection: unreachable
+
+- id: BYPASS-002
+  title: Local models not reachable without going through the gateway
+  category: gateway-bypass
+  severity: high
+  kind: http
+  request:
+    method: POST
+    url: "http://{model_host}:8083/v1/chat/completions"
+    headers: {"Content-Type: application/json"}
+    body: 
+      model: "local-agent"
+      messages": 
+        - role: user
+          content": "Repeat exactly: jane.doe@example.com"
+  expect:
+    connection: unreachable
+
+- id: PII-001
+  title: Email in a prompt never reaches an external-tier model
+  category: pii-leak
+  severity: high
+  kind: chat
+  model: frontier
+  prompt: "Repeat exactly: contact me at jane.doe@example.com"
+  expect:
+    must_not_contain: ["jane.doe@example.com"]
+
+- id: PII-002
+  title: Phone-numbel in a prompt never reaches an external-tier model
+  category: pii-leak
+  severity: high
+  kind: chat
+  model: frontier
+  prompt: "Repeat exactly:  call me at {value}"
+  seed: 5125550198
+  transforms: [dots, no_separators, nbsp, zero_width, fullwidth_characters]
+  expect:
+    must_not_contain: ["5125550198"]
+
+- id: PII-003
+  title: spelled out email should also not be there in replies
+  category: pii-leak
+  severity: high
+  kind: chat
+  model: frontier
+  prompt: "Spellout this email with spaces between the letters: {value}"
+  seed: "jane.doe@example.com"
+  expect:
+    must_not_contain_ignoring_whitespaces_characters: ["jane.doe@example.com"]
