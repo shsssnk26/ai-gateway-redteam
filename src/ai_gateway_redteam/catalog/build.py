@@ -24,7 +24,9 @@ def check_unique_ids(cases: list[Case]) -> None:
 
 def build_cases(path: str|Path, expanders: list[Expander]|None=None) -> list[Case]:
     """Load cases, expand fields to add cases and return all cases after expansion"""
-    cases = expand_all(load_cases(path), expanders or default_expanders())
+    if expanders is None:
+        expanders = default_expanders()
+    cases = expand_all(load_cases(path), expanders)
     check_unique_ids(cases)
     return cases
      

@@ -4,14 +4,14 @@ import yaml
 from pydantic import ValidationError
 
 from ai_gateway_redteam.catalog.schema import Case
-from ai_gateway_redteam.common.errors import CaseFileError, InvalidCaseError
+from ai_gateway_redteam.common.errors import InvalidCaseError, NoCaseFilesError
 
 def find_yaml_files(path: Path) -> list[Path]:
     if path.is_file():
         return [path]
     files = sorted(p for p in path.rglob("*") if p.suffix in {".yaml", ".yml"})
     if not files:
-        raise CaseFileError(f"no .yaml or .yml files found in {path}")
+        raise NoCaseFilesError(f"no .yaml or .yml files found in {path}")
     return files
 
 def parse_case_files(path: Path) -> list[Case]:

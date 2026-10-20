@@ -77,6 +77,10 @@ class Case(BaseModel):
             raise ValueError(f"{self.id}: kind 'chat' needs a model and a prompt")
         if self.transforms and self.seed is None:
             raise ValueError(f"{self.id}: transforms need a seed")
+        if self.ports and self.kind != "http":
+            raise ValueError(f"{self.id}: ports are only allowed for http cases")
+        if (self.seed is not None or self.transforms) and self.kind != "chat":
+            raise ValueError(f"{self.id}: Seed and Transforms are only valid for chat cases")
         return self
 
     
