@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from ai_gateway_redteam.cases.schema import Case
+from ai_gateway_redteam.catalog.schema import Case
 from ai_gateway_redteam.common.errors import CaseFileError, InvalidCaseError
 
 def find_yaml_files(path: Path) -> list[Path]:
@@ -27,11 +27,13 @@ def parse_case_files(path: Path) -> list[Case]:
         except ValidationError as error:
             case_id = item.get("id", "<no id>") if isinstance(item, dict) else "<not a mapping>"
             raise InvalidCaseError(f"{path}: case {case_id} is invalid:\n{error}") from error
-        return cases
+    return cases
 
 def load_cases(path: str | Path) -> list[Case]:
     """Every case from the case files, validated but not yet expanded"""
-    files = find_yaml_files(path)
+    files = find_yaml_files(Path(path))
     return [case for file in files for case in parse_case_files(file)]
+
+
 
         
