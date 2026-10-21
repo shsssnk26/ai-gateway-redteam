@@ -16,7 +16,7 @@ class Executors(Protocol):
     def applies_to(self, case : Case) -> bool:
         """Checks if the executor applies to the kind of case provided"""
 
-    def execute(self, case: Case, target: Target) -> List[str]:
+    def execute(self, case: Case, target: Target) -> Observation:
         """Sends the case to the target anf returns what was observed """
 
 
