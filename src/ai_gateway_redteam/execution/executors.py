@@ -104,7 +104,8 @@ class ChatExecutor:
         return self._with_reply(observation)
 
     def _with_reply(self, observation : Observation) -> Observation:
-        if observation.body is None:
+        # A non-200 reply (a guardrail block, a bad key) keeps its raw body for the grader to judge
+        if observation.body is None or observation.status != 200:
             return observation
         try: 
             body_json = json.loads(observation.body)

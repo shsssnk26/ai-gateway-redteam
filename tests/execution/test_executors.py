@@ -256,13 +256,22 @@ class TestChatExecutor:
         ],
     )
     def test_malformed_reply_is_an_error_and_keeps_raw_body(self, raw, error_type):
-        gateway = lambda request: httpx.Response(400, text=raw)
+        gateway = lambda request: httpx.Response(200, text=raw)
         observation = ChatExecutor(client_for(gateway)).execute(chat_case(), TARGET)
 
-        assert observation.status == 400
+        assert observation.status == 200
         assert observation.body == raw
         assert observation.error.startswith("gateway reply was not a chat completion")
         assert error_type in observation.error
+
+    @pytest.mark.parametrize("status", [400, 401, 403, 429, 500])
+    def test_non_200_keeps_raw_body_without_error(self, status):
+        raw = json.dumps({"error": {"message": "blocked by guardrail"}})
+        observation = ChatExecutor(client_for(lambda request: httpx.Response(status, text=raw))).execute(chat_case(), TARGET)
+
+        assert observation.status == status
+        assert observation.body == raw
+        assert observation.error is None
 
     def test_connection_failure_passes_through(self):
         error = httpx.ConnectError("refused")
